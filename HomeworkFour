@@ -1,0 +1,130 @@
+package homework;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.Select;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import java.util.List;
+
+public class HomeWorkFour {
+
+    @Test
+    public void test1() throws InterruptedException {
+        WebDriverManager.chromedriver().setup();
+        WebDriver driver=new ChromeDriver();
+        driver.get("https://www.cars.com/");
+        driver.manage().window().maximize();
+        WebElement stock=driver.findElement(By.name("stockType"));
+        Select select=new Select(stock);
+        select.selectByVisibleText("Certified Cars");
+        WebElement make=driver.findElement(By.name("makeId"));
+        select=new Select(make);
+        select.selectByVisibleText("Toyota");
+        WebElement model=driver.findElement(By.name("modelId"));
+        select=new Select(model);
+        select.selectByVisibleText("Corolla");
+        WebElement price=driver.findElement(By.name("priceMax"));
+        select=new Select(price);
+        select.selectByVisibleText("$30,000");
+        WebElement radius=driver.findElement(By.name("radius"));
+        select=new Select(radius);
+        select.selectByVisibleText("40 Miles from");
+        WebElement zip=driver.findElement(By.name("zip"));
+        zip.sendKeys("60018");
+        WebElement search=driver.findElement(By.className("NZE2g"));
+        search.click();
+        Thread.sleep(1000);
+        //Validating title has Certified Used
+        Assert.assertTrue(driver.getTitle().contains("Certified Used"));
+        // Validating " Certified Used Toyota Corolla for Sale" is displayed
+        Assert.assertTrue(driver.findElement(By.className("srp-header")).isDisplayed());
+
+        driver.navigate().refresh();
+        Thread.sleep(2000);
+        // validating "40 miles" is selected
+        WebElement miles=driver.findElement(By.xpath("//ul[@class='refinements']//select[@name='rd']"));
+        Select selectRadius=new Select(miles);
+        WebElement correctMiles=selectRadius.getFirstSelectedOption();
+        String actualMiles=correctMiles.getText();
+        Assert.assertEquals(actualMiles,"40 miles","Selected Radius is failed");
+        // validating "Certified Pre-Owned" is selected in radio button
+        WebElement radioButton=driver.findElement(By.xpath("//input[@id='stkTypId-28444']"));
+        Assert.assertTrue(radioButton.isSelected());
+
+        //  Validating Toyota is selected in checkbox
+        WebElement toyotaCheckBox=driver.findElement(By.xpath("//input[@id='mkId-20088']"));
+        Assert.assertTrue(toyotaCheckBox.isSelected());
+
+        //Validating Corolla is selected in checkbox
+        WebElement corollaCheckBox=driver.findElement(By.xpath("//input[@id='mdId-20861']"));
+        Assert.assertTrue(corollaCheckBox.isSelected());
+
+    }
+
+    @Test
+    public void test2() throws InterruptedException {
+        WebDriverManager.chromedriver().setup();
+        WebDriver driver=new ChromeDriver();
+        driver.get("https://www.cars.com/");
+        driver.manage().window().maximize();
+        WebElement stock=driver.findElement(By.name("stockType"));
+        Select select=new Select(stock);
+        select.selectByVisibleText("Certified Cars");
+        WebElement make=driver.findElement(By.name("makeId"));
+        select=new Select(make);
+        select.selectByVisibleText("Lexus");
+        WebElement model=driver.findElement(By.name("modelId"));
+        select=new Select(model);
+        select.selectByVisibleText("- ES 350");
+        WebElement price=driver.findElement(By.name("priceMax"));
+        select=new Select(price);
+        select.selectByVisibleText("$50,000");
+        WebElement radius=driver.findElement(By.name("radius"));
+        select=new Select(radius);
+        select.selectByVisibleText("50 Miles from");
+        WebElement zip=driver.findElement(By.name("zip"));
+        zip.sendKeys("60016");
+        WebElement search=driver.findElement(By.className("NZE2g"));
+        search.click();
+        Thread.sleep(1000);
+        List<WebElement> list=driver.findElements(By.xpath("//h2[@class='listing-row__title']"));
+        // Validate count of the cars is not more than 20
+        Assert.assertEquals(list.size(), 20);
+        // Validate All car names has "Lexus ES 350"
+        for (WebElement car: list){
+            Assert.assertTrue(car.getText().contains("Lexus ES 350"));
+        }
+        // Validate mile distance is no more than 50mil in first page
+        List<WebElement> distances=driver.findElements(By.xpath("//div[@class='listing-row__distance ']"));
+        for (WebElement distance:distances){
+            int dis=Integer.parseInt(distance.getText().trim().substring(0,2).trim());
+            Assert.assertTrue(dis<50);
+        }
+
+        //Select Sort By --> Price:Highest in drop down
+
+        WebElement sortBy=driver.findElement(By.xpath("//div[@class='select']//select[@class='select-sort-options']"));
+        Select selectSort=new Select(sortBy);
+        selectSort.selectByValue("price-highest");
+        Thread.sleep(1000);
+        
+        //Validate highest price is not more than $50000
+        List<WebElement> highestInList=driver.findElements(By.xpath("//div[@class='payment-section']"));
+        for (WebElement inList:highestInList){
+              String price1=inList.getText().trim().substring(inList.getText().indexOf('$'),7).trim();
+              price1=price1.substring(1);
+              String[] priceArr=price1.split(",");// i used an array to take out "," from the String
+              price1=priceArr[0]+priceArr[1];
+              double highPrice=Double.parseDouble(price1);
+              Assert.assertTrue(highPrice<50000);
+
+        }
+
+
+    }
+}
